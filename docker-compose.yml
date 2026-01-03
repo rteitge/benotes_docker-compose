@@ -1,4 +1,3 @@
-version: "3.6"
 services:
   app:
     container_name: benotes_app
@@ -19,10 +18,12 @@ services:
       #- ./data/nginx/logs/:/var/lib/nginx/logs/
     networks:
       - benotes
+    depends_on:
+      db: service_healthy
 
   db:
     container_name: benotes_db
-    image: postgres:15.2-alpine
+    image: postgres:15-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DATABASE: ${DB_DATABASE}
@@ -32,6 +33,11 @@ services:
       - ${DB_PORT}
     volumes:
       - benotes_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - benotes
   #
